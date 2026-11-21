@@ -1,0 +1,48 @@
+{
+ "phase": "seg",
+ "probed": 180,
+ "open": [
+  [
+   "app",
+   "db",
+   5432
+  ],
+  [
+   "app",
+   "files",
+   445
+  ],
+  [
+   "jump",
+   "app",
+   22
+  ],
+  [
+   "jump",
+   "db",
+   22
+  ],
+  [
+   "jump",
+   "files",
+   22
+  ],
+  [
+   "jump",
+   "web",
+   22
+  ],
+  [
+   "web",
+   "app",
+   8080
+  ],
+  [
+   "ws",
+   "web",
+   443
+  ]
+ ],
+ "violations": [],
+ "breaks": []
+}

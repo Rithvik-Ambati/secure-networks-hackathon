@@ -1,0 +1,13 @@
+flush ruleset
+
+table inet hostfw {
+  chain input {
+    type filter hook input priority 0; policy drop;
+    iif lo accept
+    ct state established,related accept
+    ip saddr 10.10.10.10 tcp dport 443 ct state new accept comment "F1"
+    ip saddr 10.10.40.10 tcp dport 22 ct state new limit rate 20/minute burst 20 packets accept comment "F5"
+    counter drop
+  }
+  chain output { type filter hook output priority 0; policy accept; }
+}

@@ -1,0 +1,5 @@
+A1|BLOCKED|scan found only the published web portal (443)
+A5|BLOCKED|sweep discovered no other hosts
+A2|BLOCKED|no SSH session to db
+A3|BLOCKED|no SMB access to files
+A4|BLOCKED|payload could not be copied

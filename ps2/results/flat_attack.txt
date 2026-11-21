@@ -1,0 +1,5 @@
+A1|SUCCESS|scan exposed 9 services beyond the web portal: 10.10.0.20:22 10.10.0.20:80 10.10.0.20:443 10.10.0.30:22 10.10.0.30:8080 10.10.0.31:22 10.10.0.31:5432 10.10.0.32:22 10.10.0.32:445 10.10.0.40:22 
+A5|SUCCESS|sweep discovered 4 other hosts
+A2|SUCCESS|logged in to db as dbadmin
+A3|SUCCESS|listed //files/public (secret.txt visible)
+A4|SUCCESS|payload copied to files:/tmp/payload

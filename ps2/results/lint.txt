@@ -1,0 +1,10 @@
+Policy lint: 8 flows, 0 errors, 0 warnings
+
+Worst-case blast radius if one host is fully compromised
+host   flat network   segmented, direct      segmented, by pivoting through allowed flows
+ws     5 of 5         web                    app,db,files,web
+web    5 of 5         app                    app,db,files
+app    5 of 5         db,files               db,files
+db     5 of 5         -                      -
+files  5 of 5         -                      -
+jump   5 of 5         app,db,files,web       app,db,files,web

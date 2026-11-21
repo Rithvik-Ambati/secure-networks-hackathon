@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flatland Live</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2533;--muted:#667385;--line:#dfe4ea;--teal:#128c7e;--red:#c83232;--green:#2e9e5b;--amber:#d98a1a;--navy:#1f2a44;--term:#0f1722;--termink:#c9d4e2}
+@media (prefers-color-scheme:dark){:root{--bg:#10151d;--card:#18202c;--ink:#e6ebf2;--muted:#93a0b2;--line:#2a3545;--navy:#2b3a5a;--term:#0a0f16}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:14px 24px;background:var(--navy);color:#fff}
+header h1{margin:0;font-size:20px}
+#mode{padding:3px 12px;border-radius:99px;font-weight:600;font-size:13px;background:#556;color:#fff}
+#mode.flat{background:var(--red)}#mode.seg{background:var(--green)}
+header .sub{opacity:.75;font-size:13px;margin-left:auto}
+main{display:grid;grid-template-columns:minmax(330px,420px) 1fr;gap:16px;padding:16px 24px}
+@media(max-width:980px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.card h2{margin:0 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{font:inherit;font-weight:600;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-align:left}
+button:hover:not(:disabled){border-color:var(--teal)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+button small{display:block;font-weight:400;opacity:.8;font-size:12px}
+.row{display:grid;grid-template-columns:1fr 92px 92px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.row .h{font-size:12px;color:var(--muted);text-align:center}
+.row .n small{color:var(--muted);display:block;font-size:12px}
+.b{padding:3px 0;border-radius:6px;text-align:center;font-size:12px;font-weight:700;background:var(--line);color:var(--muted);transition:.25s}
+.b.bad{background:var(--red);color:#fff}.b.good{background:var(--green);color:#fff}
+#term,#drops{background:var(--term);color:var(--termink);font:12.5px/1.4 ui-monospace,Consolas,monospace;padding:10px;border-radius:8px;height:230px;overflow:auto;white-space:pre-wrap}
+#drops div{color:#ff9d9d}#drops div.info{color:#8aa}
+.grid{overflow-x:auto}
+table.m{border-collapse:collapse;font-size:10px}
+table.m td{width:13px;height:18px;border:1px solid var(--card);padding:0}
+table.m th{font-weight:400;color:var(--muted);padding:0 6px 0 0;text-align:right;font-size:12px}
+.c0{background:transparent}.c1{background:var(--line)}.c2{background:var(--green)}.c3{background:var(--red)}.c4{background:var(--amber)}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0 10px;font-size:14px}
+.stat b{font-size:22px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Flatland Live</h1><span id="mode" class="">checking…</span>
+  <span class="sub">Every button runs the real lab. Nothing on this page is pre-recorded.</span>
+</header>
+<main>
+  <section>
+    <div class="card">
+      <h2>Run the demo</h2>
+      <div class="btns">
+        <button id="b-flat" class="primary" onclick="run('flat')">1. Build flat network<small>6 hosts, one network</small></button>
+        <button id="b-attack" onclick="run('attack')">2. Attack<small>scan, SSH, SMB, copy</small></button>
+        <button id="b-business" onclick="run('business')">3. Business flows<small>8 legitimate flows</small></button>
+        <button id="b-probe" onclick="run('probe')">4. Prove reachability<small>180 pairs probed live</small></button>
+        <button id="b-seg" class="primary" onclick="run('seg')">5. Segment it<small>4 zones + router</small></button>
+        <button id="b-defense" onclick="run('defense')">6. Extra defenses<small>egress, rate limit</small></button>
+        <button id="b-selftest" onclick="run('selftest')">7. Break it on purpose<small>does the proof notice?</small></button>
+        <button id="b-down" onclick="run('down')">Stop lab<small>free the RAM</small></button>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin:10px 0 0">Order: 1, 2, 3, 4 on the flat network, then 5, and repeat 2, 3, 4 on the segmented one.</p>
+    </div>
+    <div class="card"><h2>Terminal (live output)</h2><div id="term"></div></div>
+  </section>
+  <section>
+    <div class="card">
+      <h2>Attack stages and business flows</h2>
+      <div class="row"><span></span><span class="h">FLAT</span><span class="h">SEGMENTED</span></div>
+      <div id="rows"></div>
+    </div>
+    <div class="card">
+      <h2>Reachability matrix (rows: source, columns: destination:port)</h2>
+      <div id="grids"></div>
+      <div class="legend"><span><i style="background:var(--green)"></i>allowed and open</span><span><i style="background:var(--red)"></i>open but NOT allowed</span><span><i style="background:var(--amber)"></i>allowed but closed</span><span><i style="background:var(--line)"></i>blocked</span></div>
+    </div>
+    <div class="card"><h2>Router drops, streaming live</h2><div id="drops"></div></div>
+  </section>
+</main>
+<script>
+const STAGES=[["A1","Port scan","T1046"],["A5","Host discovery","T1018"],["A2","SSH to database","T1021.004"],["A3","SMB to file server","T1021.002"],["A4","File copy","T1570"]];
+let S={mode:"checking",addr:{},flows:[]},res={flat:{},seg:{}},mats={flat:null,seg:null},busy=false,curMode="";
+const $=id=>document.getElementById(id);
+function badge(id,m){const v=(res[m]||{})[id];return `<span class="b ${v?v.cls:''}" id="r-${id}-${m}" title="${v?v.d.replace(/"/g,''):''}">${v?v.t:'-'}</span>`}
+function draw(){
+  let h="";
+  STAGES.forEach(([id,n,t])=>h+=`<div class="row"><span class="n">${id} ${n}<small>${t}</small></span>${badge(id,'flat')}${badge(id,'seg')}</div>`);
+  (S.flows||[]).forEach((f,i)=>{const id="F"+(i+1);h+=`<div class="row"><span class="n">${id} ${f[0]} → ${f[1]}:${f[2]}</span>${badge(id,'flat')}${badge(id,'seg')}</div>`});
+  $("rows").innerHTML=h;
+  grids();
+}
+function grids(){
+  const A=S.addr||{};if(!A.flat)return;
+  const hosts=Object.keys(A.flat),ports=A.ports,allowed=new Set((A.flows||[]).map(f=>f.join("|")));
+  let out="";
+  [["flat","Before: flat network"],["seg","After: segmented"]].forEach(([ph,title])=>{
+    const m=mats[ph];let stat="not probed yet";
+    let t="<table class='m'><tr><th></th>"+hosts.map(d=>`<td colspan='${ports.length}' style='text-align:center;font-size:11px;color:var(--muted);width:auto'>${d}</td>`).join("")+"</tr>";
+    const open=new Set(m?m.open.map(x=>x.join("|")):[]);
+    hosts.forEach(s=>{t+=`<tr><th>${s}</th>`;hosts.forEach(d=>ports.forEach(p=>{
+      let c=0,k=`${s}|${d}|${p}`;
+      if(s!==d&&m){const o=open.has(k),a=allowed.has(k);c=o&&a?2:o?3:a?4:1}
+      else if(s!==d)c=1;
+      t+=`<td class='c${c}' title='${s} → ${d}:${p}'></td>`}));t+="</tr>"});
+    t+="</table>";
+    if(m)stat=`<b>${m.open.length}</b> open of ${m.probed} &nbsp; <b style='color:${m.violations.length?"var(--red)":"var(--green)"}'>${m.violations.length}</b> not in policy`;
+    out+=`<div class="grid"><div class="stat"><span>${title}</span><span>${stat}</span></div>${t}</div>`;
+  });
+  $("grids").innerHTML=out;
+}
+function log(s,cls){const t=$("term");t.textContent+=s+"\n";t.scrollTop=t.scrollHeight}
+function parse(line,m){
+  let p=line.split("|");if(p.length<3)return;
+  const id=p[0],st=p[1];
+  if(/^A\d$/.test(id)){res[m][id]={t:st==="SUCCESS"?"BREACH":"BLOCKED",cls:st==="SUCCESS"?"bad":"good",d:p.slice(2).join("|")}}
+  else if(/^F\d$/.test(id)){res[m][id]={t:st,cls:st==="PASS"?"good":"bad",d:p.slice(2).join("|")}}
+  draw();
+}
+function setBusy(b){busy=b;document.querySelectorAll("button").forEach(x=>x.disabled=b);if(!b)avail()}
+function avail(){const m=S.mode;
+  $("b-attack").disabled=$("b-business").disabled=$("b-probe").disabled=(m==="down");
+  $("b-defense").disabled=$("b-selftest").disabled=(m!=="seg")}
+async function state(){try{S=await (await fetch("/api/state")).json()}catch(e){}
+  const el=$("mode");el.textContent=S.mode==="seg"?"SEGMENTED":S.mode==="flat"?"FLAT NETWORK":"LAB STOPPED";el.className=S.mode;draw();avail()}
+function run(a){
+  if(busy)return;setBusy(true);
+  const m=S.mode==="down"?"":S.mode;curMode=m;
+  const es=new EventSource("/api/run?action="+a);
+  es.onmessage=async ev=>{const d=JSON.parse(ev.data);
+    if(d.t==="start"){curMode=d.mode;log("\n$ "+a+"  ("+d.mode+")")}
+    else if(d.t==="line"){log(d.line);parse(d.line,a==="seg"?"seg":a==="flat"?"flat":curMode);
+      const mm=d.line.match(/^\[(flat|seg)[^\]]*\] probed/);if(mm&&!d.line.includes("_s"))pendingProbe=mm[1]}
+    else if(d.t==="err"){log("! "+d.line);es.close();setBusy(false)}
+    else if(d.t==="done"){es.close();
+      if(a==="probe"||pendingProbe){const ph=pendingProbe||S.mode;mats[ph]=await (await fetch("/api/matrix?phase="+ph)).json();pendingProbe=null}
+      if(a==="flat")res.flat={};if(a==="seg")res.seg={};
+      await state();setBusy(false);avail()}};
+  es.onerror=()=>{es.close();setBusy(false)};
+}
+let pendingProbe=null;
+function drops(){
+  const es=new EventSource("/api/drops"),box=$("drops");
+  es.onmessage=ev=>{const d=JSON.parse(ev.data);const e=document.createElement("div");
+    if(d.t==="info"){if(box.lastChild&&box.lastChild.textContent===d.line)return;e.className="info";e.textContent=d.line}else e.textContent=d.ts+"  DROP  "+d.line;
+    box.appendChild(e);while(box.children.length>200)box.removeChild(box.firstChild);box.scrollTop=box.scrollHeight};
+  es.onerror=()=>{es.close();setTimeout(drops,3000)};
+}
+state().then(()=>{drops()});setInterval(()=>{if(!busy)state()},5000);
+</script>
+</body>
+</html>

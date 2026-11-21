@@ -1,0 +1,3 @@
+S1|PASS|router had a wrong rule but the db host firewall still blocked it (defense in depth)
+S2|PASS|harness detected the injected hole (1 unauthorized path: ws -> db:5432)
+S3|PASS|rulesets restored, proof passes again (0 unauthorized)

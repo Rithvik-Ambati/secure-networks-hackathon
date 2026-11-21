@@ -1,0 +1,11 @@
+flush ruleset
+
+table inet hostfw {
+  chain input {
+    type filter hook input priority 0; policy drop;
+    iif lo accept
+    ct state established,related accept
+    counter drop
+  }
+  chain output { type filter hook output priority 0; policy accept; }
+}

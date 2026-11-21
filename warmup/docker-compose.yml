@@ -1,0 +1,17 @@
+# Warm-up lab: attacker -> victim web, with a sniffer sharing the victim's network namespace.
+services:
+  victim:
+    image: nginx:stable
+    networks: [labnet]
+  attacker:
+    image: kalilinux/kali-rolling
+    command: sleep infinity
+    networks: [labnet]
+  sniffer:
+    image: nicolaka/netshoot
+    network_mode: "service:victim"
+    cap_add: [NET_ADMIN, NET_RAW]
+    command: tcpdump -i eth0 -w /pcaps/lab.pcap
+    volumes: ["../pcaps:/pcaps"]
+networks:
+  labnet:

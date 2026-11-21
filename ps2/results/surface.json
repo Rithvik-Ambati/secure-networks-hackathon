@@ -1,0 +1,8 @@
+{
+ "flat_open": 55,
+ "seg_open": 8,
+ "flat_unauthorized": 47,
+ "seg_unauthorized": 0,
+ "attack_surface_reduction_pct": 100.0,
+ "seg_breaks": 0
+}

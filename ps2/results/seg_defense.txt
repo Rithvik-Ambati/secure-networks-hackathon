@@ -1,0 +1,5 @@
+E1|PASS|db host cannot call out (host egress filter)
+E2|PASS|server-to-user connection blocked at the router
+E3|PASS|only the app can reach db:5432 (host micro-segmentation)
+E5|PASS|same-zone lateral movement blocked (files cannot reach app:22)
+E4|PASS|SSH rate limit: only 20 of 60 rapid attempts got through

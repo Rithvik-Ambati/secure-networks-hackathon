@@ -1,0 +1,8 @@
+F1|PASS|ws -> web:443 Users reach the web portal over HTTPS
+F2|PASS|web -> app:8080 Web tier calls the app API
+F3|PASS|app -> db:5432 App reads and writes the database
+F4|PASS|app -> files:445 App stores documents on the file server
+F5|PASS|jump -> web:22 Admin SSH to web
+F6|PASS|jump -> app:22 Admin SSH to app
+F7|PASS|jump -> db:22 Admin SSH to database
+F8|PASS|jump -> files:22 Admin SSH to file server

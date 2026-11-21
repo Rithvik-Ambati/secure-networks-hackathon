@@ -1,0 +1,7 @@
+host,flat_reach,seg_direct,seg_pivot
+ws,5,1,4
+web,5,1,3
+app,5,2,2
+db,5,0,0
+files,5,0,0
+jump,5,4,4

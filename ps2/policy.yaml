@@ -1,0 +1,37 @@
+# Single source of truth. Everything else (compose, firewall, tests, tables, diagram) is generated from this.
+# Flat network (the "before" lab): every host on one subnet.
+flat:
+  subnet: 10.10.0.0/24
+  hosts: {ws: 10, web: 20, app: 30, db: 31, files: 32, jump: 40}
+
+# Segmented network (the "after" lab): one subnet per security zone, joined by a router container.
+router_host: 254
+zones:
+  user:   {subnet: 10.10.10.0/24, hosts: {ws: 10}}
+  dmz:    {subnet: 10.10.20.0/24, hosts: {web: 10}}
+  server: {subnet: 10.10.30.0/24, hosts: {app: 10, db: 11, files: 12}}
+  mgmt:   {subnet: 10.10.40.0/24, hosts: {jump: 10}}
+
+roles: {ws: node, web: web, app: app, db: db, files: files, jump: jump}
+
+# Business data flows: the ONLY traffic allowed after segmentation (default deny for the rest).
+flows:
+  - {id: F1, src: ws,   dst: web,   port: 443,  desc: "Users reach the web portal over HTTPS"}
+  - {id: F2, src: web,  dst: app,   port: 8080, desc: "Web tier calls the app API"}
+  - {id: F3, src: app,  dst: db,    port: 5432, desc: "App reads and writes the database"}
+  - {id: F4, src: app,  dst: files, port: 445,  desc: "App stores documents on the file server"}
+  - {id: F5, src: jump, dst: web,   port: 22,   desc: "Admin SSH to web", rate: "20/minute"}
+  - {id: F6, src: jump, dst: app,   port: 22,   desc: "Admin SSH to app", rate: "20/minute"}
+  - {id: F7, src: jump, dst: db,    port: 22,   desc: "Admin SSH to database", rate: "20/minute"}
+  - {id: F8, src: jump, dst: files, port: 22,   desc: "Admin SSH to file server", rate: "20/minute"}
+
+# Ports probed by the reachability verifier.
+probe_ports: [22, 80, 443, 445, 5432, 8080]
+
+# ATT&CK / D3FEND / mitigation mapping for the attack stages.
+attack_map:
+  A1: {name: "Port scan from workstation",  technique: "T1046",     mitigation: "M1030, M1037", d3fend: "Network Isolation"}
+  A2: {name: "SSH login to database host",  technique: "T1021.004", mitigation: "M1030, M1037", d3fend: "Inbound Traffic Filtering"}
+  A3: {name: "SMB access to file server",   technique: "T1021.002", mitigation: "M1030, M1037", d3fend: "Inbound Traffic Filtering"}
+  A4: {name: "File copy to another host",   technique: "T1570",     mitigation: "M1030, M1037", d3fend: "Outbound Traffic Filtering"}
+  A5: {name: "Remote system discovery",     technique: "T1018",     mitigation: "M1030",        d3fend: "Network Isolation"}

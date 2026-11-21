@@ -1,0 +1,110 @@
+name: ps2flat
+services:
+  ws:
+    image: ps2-node
+    container_name: ps2-ws
+    hostname: ws
+    environment:
+      ROLE: node
+    cap_add:
+    - NET_ADMIN
+    extra_hosts:
+    - web:10.10.0.20
+    - app:10.10.0.30
+    - db:10.10.0.31
+    - files:10.10.0.32
+    - jump:10.10.0.40
+    networks:
+      flat:
+        ipv4_address: 10.10.0.10
+  web:
+    image: ps2-node
+    container_name: ps2-web
+    hostname: web
+    environment:
+      ROLE: web
+    cap_add:
+    - NET_ADMIN
+    extra_hosts:
+    - ws:10.10.0.10
+    - app:10.10.0.30
+    - db:10.10.0.31
+    - files:10.10.0.32
+    - jump:10.10.0.40
+    networks:
+      flat:
+        ipv4_address: 10.10.0.20
+  app:
+    image: ps2-node
+    container_name: ps2-app
+    hostname: app
+    environment:
+      ROLE: app
+    cap_add:
+    - NET_ADMIN
+    extra_hosts:
+    - ws:10.10.0.10
+    - web:10.10.0.20
+    - db:10.10.0.31
+    - files:10.10.0.32
+    - jump:10.10.0.40
+    networks:
+      flat:
+        ipv4_address: 10.10.0.30
+  db:
+    image: ps2-node
+    container_name: ps2-db
+    hostname: db
+    environment:
+      ROLE: db
+    cap_add:
+    - NET_ADMIN
+    extra_hosts:
+    - ws:10.10.0.10
+    - web:10.10.0.20
+    - app:10.10.0.30
+    - files:10.10.0.32
+    - jump:10.10.0.40
+    networks:
+      flat:
+        ipv4_address: 10.10.0.31
+  files:
+    image: ps2-node
+    container_name: ps2-files
+    hostname: files
+    environment:
+      ROLE: files
+    cap_add:
+    - NET_ADMIN
+    extra_hosts:
+    - ws:10.10.0.10
+    - web:10.10.0.20
+    - app:10.10.0.30
+    - db:10.10.0.31
+    - jump:10.10.0.40
+    networks:
+      flat:
+        ipv4_address: 10.10.0.32
+  jump:
+    image: ps2-node
+    container_name: ps2-jump
+    hostname: jump
+    environment:
+      ROLE: jump
+    cap_add:
+    - NET_ADMIN
+    extra_hosts:
+    - ws:10.10.0.10
+    - web:10.10.0.20
+    - app:10.10.0.30
+    - db:10.10.0.31
+    - files:10.10.0.32
+    networks:
+      flat:
+        ipv4_address: 10.10.0.40
+networks:
+  flat:
+    internal: true
+    ipam:
+      config:
+      - subnet: 10.10.0.0/24

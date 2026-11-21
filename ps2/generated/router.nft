@@ -1,0 +1,33 @@
+flush ruleset
+
+table inet ps2 {
+  chain input {
+    type filter hook input priority 0; policy drop;
+    ct state established,related accept
+    iif lo accept
+  }
+  chain forward {
+    type filter hook forward priority 0; policy drop;
+    ct state invalid drop
+    ct state established,related accept
+    ip saddr 10.10.10.10 ip daddr 10.10.20.10 tcp dport 443 ct state new accept comment "F1 ws->web:443"
+    ip saddr 10.10.20.10 ip daddr 10.10.30.10 tcp dport 8080 ct state new accept comment "F2 web->app:8080"
+    ip saddr 10.10.30.10 ip daddr 10.10.30.11 tcp dport 5432 ct state new accept comment "F3 app->db:5432"
+    ip saddr 10.10.30.10 ip daddr 10.10.30.12 tcp dport 445 ct state new accept comment "F4 app->files:445"
+    ip saddr 10.10.40.10 ip daddr 10.10.20.10 tcp dport 22 ct state new limit rate 20/minute burst 20 packets accept comment "F5 jump->web:22"
+    ip saddr 10.10.40.10 ip daddr 10.10.30.10 tcp dport 22 ct state new limit rate 20/minute burst 20 packets accept comment "F6 jump->app:22"
+    ip saddr 10.10.40.10 ip daddr 10.10.30.11 tcp dport 22 ct state new limit rate 20/minute burst 20 packets accept comment "F7 jump->db:22"
+    ip saddr 10.10.40.10 ip daddr 10.10.30.12 tcp dport 22 ct state new limit rate 20/minute burst 20 packets accept comment "F8 jump->files:22"
+    # log what is dropped, per source zone (read with: tcpdump -i nflog:1)
+    ip saddr 10.10.10.0/24 limit rate 100/second burst 200 packets log prefix "PS2-DROP zone=user " group 1
+    ip saddr 10.10.10.0/24 limit rate 100/second burst 200 packets log prefix "PS2-DROP zone=user " group 2  # live dashboard feed
+    ip saddr 10.10.20.0/24 limit rate 100/second burst 200 packets log prefix "PS2-DROP zone=dmz " group 1
+    ip saddr 10.10.20.0/24 limit rate 100/second burst 200 packets log prefix "PS2-DROP zone=dmz " group 2  # live dashboard feed
+    ip saddr 10.10.30.0/24 limit rate 100/second burst 200 packets log prefix "PS2-DROP zone=server " group 1
+    ip saddr 10.10.30.0/24 limit rate 100/second burst 200 packets log prefix "PS2-DROP zone=server " group 2  # live dashboard feed
+    ip saddr 10.10.40.0/24 limit rate 100/second burst 200 packets log prefix "PS2-DROP zone=mgmt " group 1
+    ip saddr 10.10.40.0/24 limit rate 100/second burst 200 packets log prefix "PS2-DROP zone=mgmt " group 2  # live dashboard feed
+    counter drop
+  }
+  chain output { type filter hook output priority 0; policy accept; }
+}

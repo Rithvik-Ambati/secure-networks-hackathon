@@ -1,0 +1,87 @@
+name: ps2seg
+services:
+  ws:
+    image: ps2-node
+    container_name: ps2-ws
+    hostname: ws
+    network_mode: none
+    environment:
+      ROLE: node
+      HOSTS: ws=10.10.10.10,web=10.10.20.10,app=10.10.30.10,db=10.10.30.11,files=10.10.30.12,jump=10.10.40.10
+    cap_add:
+    - NET_ADMIN
+    volumes:
+    - ./ws.nft:/etc/host.nft:ro
+  web:
+    image: ps2-node
+    container_name: ps2-web
+    hostname: web
+    network_mode: none
+    environment:
+      ROLE: web
+      HOSTS: ws=10.10.10.10,web=10.10.20.10,app=10.10.30.10,db=10.10.30.11,files=10.10.30.12,jump=10.10.40.10
+    cap_add:
+    - NET_ADMIN
+    volumes:
+    - ./web.nft:/etc/host.nft:ro
+  app:
+    image: ps2-node
+    container_name: ps2-app
+    hostname: app
+    network_mode: none
+    environment:
+      ROLE: app
+      HOSTS: ws=10.10.10.10,web=10.10.20.10,app=10.10.30.10,db=10.10.30.11,files=10.10.30.12,jump=10.10.40.10
+    cap_add:
+    - NET_ADMIN
+    volumes:
+    - ./app.nft:/etc/host.nft:ro
+  db:
+    image: ps2-node
+    container_name: ps2-db
+    hostname: db
+    network_mode: none
+    environment:
+      ROLE: db
+      HOSTS: ws=10.10.10.10,web=10.10.20.10,app=10.10.30.10,db=10.10.30.11,files=10.10.30.12,jump=10.10.40.10
+    cap_add:
+    - NET_ADMIN
+    volumes:
+    - ./db.nft:/etc/host.nft:ro
+  files:
+    image: ps2-node
+    container_name: ps2-files
+    hostname: files
+    network_mode: none
+    environment:
+      ROLE: files
+      HOSTS: ws=10.10.10.10,web=10.10.20.10,app=10.10.30.10,db=10.10.30.11,files=10.10.30.12,jump=10.10.40.10
+    cap_add:
+    - NET_ADMIN
+    volumes:
+    - ./files.nft:/etc/host.nft:ro
+  jump:
+    image: ps2-node
+    container_name: ps2-jump
+    hostname: jump
+    network_mode: none
+    environment:
+      ROLE: jump
+      HOSTS: ws=10.10.10.10,web=10.10.20.10,app=10.10.30.10,db=10.10.30.11,files=10.10.30.12,jump=10.10.40.10
+    cap_add:
+    - NET_ADMIN
+    volumes:
+    - ./jump.nft:/etc/host.nft:ro
+  router:
+    image: ps2-node
+    container_name: ps2-router
+    hostname: router
+    network_mode: none
+    environment:
+      ROLE: router
+    cap_add:
+    - NET_ADMIN
+    sysctls:
+      net.ipv4.ip_forward: 1
+    volumes:
+    - ./router.nft:/etc/router.nft:ro
