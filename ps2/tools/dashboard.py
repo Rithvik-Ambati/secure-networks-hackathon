@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Live demo dashboard. Run in WSL2 Ubuntu:  python tools/dashboard.py   then open http://localhost:8765
 Every button runs the real lab commands; results and router drops stream in live. Binds to localhost only."""
-import json, os, subprocess, threading, time
+import json, os, socket, subprocess, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -106,7 +106,14 @@ class H(BaseHTTPRequestHandler):
         finally:
             p.kill()
 
+class V6(ThreadingHTTPServer):
+    address_family = socket.AF_INET6
+
 if __name__ == "__main__":
+    try:  # also answer on [::1] so a browser that resolves "localhost" to IPv6 still connects
+        threading.Thread(target=V6(("::1", 8765), H).serve_forever, daemon=True).start()
+    except OSError:
+        pass
     srv = ThreadingHTTPServer(("127.0.0.1", 8765), H)
-    print("Live dashboard on http://localhost:8765  (Ctrl+C to stop)", flush=True)
+    print("Live dashboard ready: open http://127.0.0.1:8765   (Ctrl+C to stop)", flush=True)
     srv.serve_forever()
