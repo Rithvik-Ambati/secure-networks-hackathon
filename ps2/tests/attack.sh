@@ -12,7 +12,7 @@ SSHO="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTime
 
 # A1: port scan of the lab hosts (T1046)
 webip=$(ws getent hosts web | awk '{print $1}')
-open=$(ws nmap -Pn -n -p 22,80,443,445,5432,8080 --max-retries 1 --host-timeout 25s -T4 -oG - web app db files jump 2>/dev/null \
+open=$(ws nmap -Pn -n -p 22,80,443,445,5432,8080 --max-retries 1 --max-rtt-timeout 500ms --host-timeout 10s -T4 -oG - web app db files jump 2>/dev/null \
   | grep 'Ports:' | awk -F'\t' '{split($1,h," "); ip=h[2]; n=split($2,p,", "); for(i=1;i<=n;i++){ sub(/^Ports: /,"",p[i]); if (p[i] ~ /\/open\//){split(p[i],q,"/"); print ip":"q[1]}}}')
 beyond=$(echo "$open" | grep -v "^${webip}:443$" | grep -c .)
 if [ "$beyond" -gt 0 ]; then emit "A1|SUCCESS|scan exposed $beyond services beyond the web portal: $(echo "$open" | tr '\n' ' ')"
@@ -20,7 +20,7 @@ else emit "A1|BLOCKED|scan found only the published web portal (443)"; fi
 
 # A5: remote system discovery sweep (T1018)
 self=$(ws hostname -i | awk '{print $1}')
-up=$(ws nmap -sn -n --max-retries 1 --host-timeout 5s -T4 -PE -PS22,80,443,445,5432,8080 $CIDRS -oG - 2>/dev/null \
+up=$(ws nmap -sn -n --max-retries 0 --max-rtt-timeout 400ms --host-timeout 4s -T4 -PE -PS22,80,443,445,5432,8080 $CIDRS -oG - 2>/dev/null \
   | awk '/Status: Up/{print $2}' | grep -v "^${self}$" | grep -vE '\.(1|254)$' | grep -v "^${webip}$" | grep -c .)  # ignore own IP, network gateways (.1/.254) and the published web portal
 if [ "$up" -gt 0 ]; then emit "A5|SUCCESS|sweep discovered $up other hosts"
 else emit "A5|BLOCKED|sweep discovered no other hosts"; fi
